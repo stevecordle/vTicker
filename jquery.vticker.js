@@ -1,21 +1,27 @@
 /*
 * vertical news ticker
-* Tadas Juozapaitis ( kasp3rito [eta] gmail (dot) com )
-* http://www.jugbit.com/jquery-vticker-vertical-news-ticker/
+* Original Author: Tadas Juozapaitis ( kasp3rito [eta] gmail (dot) com )
+* Current Version Author: Steve Cordle
+* GitHub: stevecordle
+* Version: 1.1
 */
+
 (function($){
 $.fn.vTicker = function(options) {
 	var defaults = {
 		speed: 700,
 		pause: 4000,
-		showItems: 3,
+		showItems: 5,
 		animation: '',
 		mousePause: true,
 		isPaused: false,
 		direction: 'up',
-		height: 0
+		height: 0,
+        prev: $('.prev'),
+        next: $('.next')
 	};
 
+        var $this = $(this);
 	var options = $.extend(defaults, options);
 
 	moveUp = function(obj2, height, options){
@@ -24,28 +30,28 @@ $.fn.vTicker = function(options) {
 		
 		var obj = obj2.children('ul');
 		
-    	var clone = obj.children('li:first').clone(true);
-		
-		if(options.height > 0)
-		{
-			height = obj.children('li:first').height();
-		}		
-		
-    	obj.animate({top: '-=' + height + 'px'}, options.speed, function() {
-        	$(this).children('li:first').remove();
-        	$(this).css('top', '0px');
-        });
-		
-		if(options.animation == 'fade')
-		{
-			obj.children('li:first').fadeOut(options.speed);
-			if(options.height == 0)
-			{
-			obj.children('li:eq(' + options.showItems + ')').hide().fadeIn(options.speed).show();
-			}
-		}
+                var clone = obj.children('li:first').clone(true);
 
-    	clone.appendTo(obj);
+                        if(options.height > 0)
+                        {
+                                height = obj.children('li:first').height();
+                        }		
+
+                obj.animate({top: '-=' + height + 'px'}, options.speed, function() {
+                        $(this).children('li:first').remove();
+                        $(this).css('top', '0px');
+                });
+
+                        if(options.animation == 'fade')
+                        {
+                                obj.children('li:first').fadeOut(options.speed);
+                                if(options.height == 0)
+                                {
+                                obj.children('li:eq(' + options.showItems + ')').hide().fadeIn(options.speed).show();
+                                }
+                        }
+
+                clone.appendTo(obj);
 	};
 	
 	moveDown = function(obj2, height, options){
@@ -54,19 +60,19 @@ $.fn.vTicker = function(options) {
 		
 		var obj = obj2.children('ul');
 		
-    	var clone = obj.children('li:last').clone(true);
-		
-		if(options.height > 0)
-		{
-			height = obj.children('li:first').height();
-		}
-		
-		obj.css('top', '-' + height + 'px')
-			.prepend(clone);
-			
-    	obj.animate({top: 0}, options.speed, function() {
-        	$(this).children('li:last').remove();
-        });
+                var clone = obj.children('li:last').clone(true);
+
+                        if(options.height > 0)
+                        {
+                                height = obj.children('li:first').height();
+                        }
+
+                        obj.css('top', '-' + height + 'px')
+                                .prepend(clone);
+
+                obj.animate({top: 0}, options.speed, function() {
+                        $(this).children('li:last').remove();
+                });
 		
 		if(options.animation == 'fade')
 		{
@@ -77,6 +83,97 @@ $.fn.vTicker = function(options) {
 			obj.children('li:first').hide().fadeIn(options.speed).show();
 		}
 	};
+        
+        options.next.on({
+            click: function(e){
+                e.preventDefault();
+                $this.each(function() {
+                        var obj = $(this);
+                        var maxHeight = 0;
+
+                        obj.css({overflow: 'hidden', position: 'relative'})
+                                .children('ul').css({position: 'absolute', margin: 0, padding: 0})
+                                .children('li').css({margin: 0, padding: 0});
+
+                        if(options.height == 0)
+                        {
+                                obj.children('ul').children('li').each(function(){
+                                        if($(this).height() > maxHeight)
+                                        {
+                                                maxHeight = $(this).height();
+                                        }
+                                });
+
+                                obj.children('ul').children('li').each(function(){
+                                        $(this).height(maxHeight);
+                                });
+
+                                obj.height(maxHeight * options.showItems);
+                        }
+                        else
+                        {
+                                obj.height(options.height);
+                        }
+
+                        moveUp(obj, maxHeight, options); 
+
+                        if(options.mousePause)
+                        {
+                                obj.bind("mouseenter",function(){
+                                        options.isPaused = true;
+                                }).bind("mouseleave",function(){
+                                        options.isPaused = false;
+                                });
+                        }
+                });
+            }
+        });
+        
+                
+        options.prev.on({
+            click: function(e){
+                e.preventDefault();
+                $this.each(function() {
+                        var obj = $(this);
+                        var maxHeight = 0;
+
+                        obj.css({overflow: 'hidden', position: 'relative'})
+                                .children('ul').css({position: 'absolute', margin: 0, padding: 0})
+                                .children('li').css({margin: 0, padding: 0});
+
+                        if(options.height == 0)
+                        {
+                                obj.children('ul').children('li').each(function(){
+                                        if($(this).height() > maxHeight)
+                                        {
+                                                maxHeight = $(this).height();
+                                        }
+                                });
+
+                                obj.children('ul').children('li').each(function(){
+                                        $(this).height(maxHeight);
+                                });
+
+                                obj.height(maxHeight * options.showItems);
+                        }
+                        else
+                        {
+                                obj.height(options.height);
+                        }
+
+                        moveDown(obj, maxHeight, options); 
+
+                        if(options.mousePause)
+                        {
+                                obj.bind("mouseenter",function(){
+                                        options.isPaused = true;
+                                }).bind("mouseleave",function(){
+                                        options.isPaused = false;
+                                });
+                        }
+                });
+            }
+        });
 	
 	return this.each(function() {
 		var obj = $(this);
@@ -106,7 +203,7 @@ $.fn.vTicker = function(options) {
 			obj.height(options.height);
 		}
 		
-    	var interval = setInterval(function(){ 
+                var interval = setInterval(function(){ 
 			if(options.direction == 'up')
 			{ 
 				moveUp(obj, maxHeight, options); 
